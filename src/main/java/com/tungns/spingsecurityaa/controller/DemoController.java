@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class DemoController {
-    @GetMapping("/")
+    @GetMapping("/read-sms")
+//    @PreAuthorize("hasAuthority('READ_SMS')")
     public String demo() {
-        return "OK";
+        return "read-sms";
     }
 }

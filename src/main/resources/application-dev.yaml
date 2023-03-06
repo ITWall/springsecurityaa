@@ -2,11 +2,19 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/tungns
     username: postgres
-    password: 1234
+    password: 123456789
+    hikari:
+      schema: demo
   jpa:
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 app:
   secret-key: top-secret-key

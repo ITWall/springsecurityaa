@@ -1,30 +1,45 @@
 package com.tungns.spingsecurityaa.security;
 
-import com.tungns.spingsecurityaa.security.filter.CustomAuthFilter;
-import com.tungns.spingsecurityaa.security.manager.CustomAuthenticationManager;
-import com.tungns.spingsecurityaa.security.manager.CustomAuthenticationManager2;
-import com.tungns.spingsecurityaa.security.provider.CustomAuthenticationProvider2;
+import com.tungns.spingsecurityaa.filter.SecurityFilter;
+import com.tungns.spingsecurityaa.security.entrypoint.CustomAuthEntrypoint;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @AllArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
-    private CustomAuthenticationManager customAuthenticationManager;
+
+    private SecurityFilter securityFilter;
+    private CustomAuthEntrypoint customAuthEntrypoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests()
-                .anyRequest()
-                .authenticated()
+        return http
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests().anyRequest().authenticated().and()
+                .exceptionHandling().authenticationEntryPoint(customAuthEntrypoint)
                 .and()
-                .httpBasic()
-                .and().authenticationManager(new CustomAuthenticationManager2(new CustomAuthenticationProvider2()))
-                .addFilterAfter(new CustomAuthFilter(customAuthenticationManager), BasicAuthenticationFilter.class)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .build();
     }
 
+    @Bean
+    public AuthenticationManager authManager(HttpSecurity http, @Qualifier("customAuthenticationProvider") AuthenticationProvider authProvider) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.authenticationProvider(authProvider);
+        return authenticationManagerBuilder.build();
+    }
 }
