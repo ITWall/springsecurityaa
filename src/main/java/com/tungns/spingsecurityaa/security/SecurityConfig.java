@@ -21,15 +21,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private SecurityFilter securityFilter;
-    private CustomAuthEntrypoint customAuthEntrypoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests().anyRequest().authenticated().and()
-                .exceptionHandling().authenticationEntryPoint(customAuthEntrypoint)
-                .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .build();
@@ -42,4 +38,5 @@ public class SecurityConfig {
         authenticationManagerBuilder.authenticationProvider(authProvider);
         return authenticationManagerBuilder.build();
     }
+
 }
