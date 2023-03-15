@@ -2,27 +2,33 @@ package com.tungns.spingsecurityaa.filter;
 
 import com.tungns.spingsecurityaa.security.authManager.CustomAuthenticationManager;
 import com.tungns.spingsecurityaa.security.authentication.CustomAuthentication;
-import com.tungns.spingsecurityaa.security.entrypoint.CustomAuthEntrypoint;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.util.List;
 
-@AllArgsConstructor
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
     private final CustomAuthenticationManager authenticationManager;
-    private final CustomAuthEntrypoint customAuthEntrypoint;
+//    private final CustomAuthEntrypoint customAuthEntrypoint;
     private final List<MvcRequestMatcher> mvcRequestMatchers;
+    private final HandlerExceptionResolver exceptionResolver;
+
+    public SecurityFilter(CustomAuthenticationManager authenticationManager, List<MvcRequestMatcher> mvcRequestMatchers,@Qualifier(value = "handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) {
+        this.authenticationManager = authenticationManager;
+        this.mvcRequestMatchers = mvcRequestMatchers;
+        this.exceptionResolver = exceptionResolver;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -40,7 +46,8 @@ public class SecurityFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
         } catch (AuthenticationException e) {
-            customAuthEntrypoint.commence(request, response, e);
+            exceptionResolver.resolveException(request, response, null, e);
+//            customAuthEntrypoint.commence(request, response, e);
         }
     }
 }

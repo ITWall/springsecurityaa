@@ -38,6 +38,13 @@ public class DataLoaderService {
         roleRepository.save(role);
         var user = new UserEntity().setUsername("TungNS").setPassword("123456").setRole(role);
         userRepository.save(user);
+
+        var authority2 = new AuthorityEntity().setCode("TEST").setName("Test");
+        authorityRepository.save(authority2);
+        var role2 = new RoleEntity().setName("Admin-Test").setAuthorities(Collections.singletonList(authority2));
+        roleRepository.save(role2);
+        var user2 = new UserEntity().setUsername("TungNS2").setPassword("123456").setRole(role2);
+        userRepository.save(user2);
     }
 }
 
